@@ -1,0 +1,419 @@
+{
+  "name": "Demo Booking Sub-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        1024,
+        608
+      ],
+      "id": "e4bffe97-7fe7-4a07-8404-d4a2336436f6",
+      "name": "When chat message received",
+      "webhookId": "2f9ee627-ee26-4f04-9ada-063e0953a0a3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please book a demo with:\n{{ $json.body.name }}\nAt the following time:\n{{ $json.body.timeslot }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are provided with a person who would like to receive a demo of the AccountAI product and their preferred timeslot. You use your tool to check the calendar's availability, and then book the demo in the calendar. Reply with the result."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        16,
+        32
+      ],
+      "id": "b3eb437f-d6ba-4cd8-8b79-d700e2f974e8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6cc34fc4-2c16-4ade-8af0-93375898725d",
+              "leftValue": "={{ $json.output.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        32
+      ],
+      "id": "a8ba60c7-0f25-4172-af69-063309db6070",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b958debe-af19-4370-b2a8-51ad89ab6ba5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "f47a104d-ba7a-483e-bad6-16958da77a98",
+      "name": "Webhook",
+      "webhookId": "b958debe-af19-4370-b2a8-51ad89ab6ba5"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('AI Agent').item.json.output.summary }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        480
+      ],
+      "id": "e72c9945-8256-47bb-8194-1947420250ab",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('AI Agent').item.json.output.summary }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        496,
+        480
+      ],
+      "id": "dfb34f24-f70a-4653-bb7a-7e7365bdd32a",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "userKey": "ujaq8iib5rgxe7741shqcdx2vmggke",
+        "message": "={{ $json.output.summary }}",
+        "priority": 1,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pushover",
+      "typeVersion": 1,
+      "position": [
+        656,
+        256
+      ],
+      "id": "ffe42e0a-c26d-4254-bbb1-2ca9bdee4a1d",
+      "name": "Send Success Notification",
+      "credentials": {
+        "pushoverApi": {
+          "id": "F7bF1lNq7OtmAlJV",
+          "name": "Pushover account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "userKey": "=ujaq8iib5rgxe7741shqcdx2vmggke",
+        "message": "No availability found",
+        "priority": 1,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pushover",
+      "typeVersion": 1,
+      "position": [
+        496,
+        240
+      ],
+      "id": "21607b42-6618-4b3a-a0f9-9ac21999f4c4",
+      "name": "Send Failure Notification",
+      "credentials": {
+        "pushoverApi": {
+          "id": "F7bF1lNq7OtmAlJV",
+          "name": "Pushover account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        272
+      ],
+      "id": "910f2bb0-40d3-4524-bb4a-37dea01bceac",
+      "name": "Primary LLM",
+      "credentials": {
+        "openRouterApi": {
+          "id": "cIvoo35XOJQPiczG",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get availability in a calendar in Google Calendar - whether the user is available to give a demo from the given start time to end time.",
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "anishasingh452@gmail.com",
+          "mode": "list",
+          "cachedResultName": "anishasingh452@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End_Time', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        272
+      ],
+      "id": "3dcb854e-7ef8-4fdf-9d08-4a6647f9b8c4",
+      "name": "Check Calendar Availability",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "E7rtge05DNZ7uPhN",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an event in Google Calendar to represent a demo at a time that is available.",
+        "calendar": {
+          "__rl": true,
+          "value": "anishasingh452@gmail.com",
+          "mode": "list",
+          "cachedResultName": "anishasingh452@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "location": "https://zoom.us/j/123456789",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        272
+      ],
+      "id": "a157997e-5649-4f4a-a177-02db84c9f67a",
+      "name": "Create Calendar Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "E7rtge05DNZ7uPhN",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"success\": true,\n  \"summary\": \"summarize the outcome here\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        272
+      ],
+      "id": "9f65102b-6dd1-4ede-a039-8d5ce2ffb6f7",
+      "name": "Response Formatter"
+    },
+    {
+      "parameters": {
+        "content": "## Schedule",
+        "height": 496,
+        "width": 576,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "879ef1ca-5fec-4b49-ad71-98384d447e4b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Report",
+        "height": 400,
+        "width": 576,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "32cee437-505f-42da-aed5-6f4eec75d155",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Failure Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Success Notification": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Failure Notification": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Primary LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Calendar Availability": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Formatter": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d3f405e1-3987-4c97-98e2-dbdf94499ac3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ccdb55b2c5cf429df1f14e326a85d1add2591ae2943af930841b4a1713f9712e"
+  },
+  "nodeGroups": [],
+  "id": "2kFYT354tK2Ga49q",
+  "tags": []
+}

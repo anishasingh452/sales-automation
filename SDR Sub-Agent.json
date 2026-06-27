@@ -1,0 +1,163 @@
+{
+  "name": "SDR Sub-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        192,
+        224
+      ],
+      "id": "09509722-24fd-48e5-8406-f86a3f619d44",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "Qm9LrzYzhJoD217N",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.pipedriveTool",
+      "typeVersion": 2,
+      "position": [
+        352,
+        224
+      ],
+      "id": "2b453fe9-87d6-497b-b8c7-5c3cce6597e5",
+      "name": "Get many persons in Pipedrive",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "O0IODbHhzWug3ip9",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "html",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To_Email', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        224
+      ],
+      "id": "664be6db-b13b-4c55-91c1-dd49c187ada5",
+      "name": "Create a draft in Gmail",
+      "webhookId": "894f9ef9-530d-416b-bbed-7931abcf4833",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vijXvGob89ypKToQ",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        0
+      ],
+      "id": "5d86d8c7-0bd3-43c4-8cea-3e669f1702e3",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are an SDR. You use your tool to read all the Person records in the Pipedrive CRM; for each Person, use your tool to create a Draft Email from Anisha Singh (the CTO of Accounting firm FinanceFlow) to pitch FinanceFlow's innovative accounting software products. The email should be professionally formatted in HTML. Explain in the email that if people are interested, they should call +91 9166678178 to speak with our AI Agent and schedule a demo. Do not include any additional details about FinanceFlow or the software that you do not know; simply state that it is innovative accounting software that will streamline costs and drive efficiency.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "d5acbd7a-e300-44ca-942b-e88e06a0f9da",
+      "name": "SDR Sub-Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SDR Sub-Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many persons in Pipedrive": {
+      "ai_tool": [
+        [
+          {
+            "node": "SDR Sub-Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "SDR Sub-Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "SDR Sub-Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3b5b36d1-38c1-4ffc-a92b-4dbc048dc8f6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ccdb55b2c5cf429df1f14e326a85d1add2591ae2943af930841b4a1713f9712e"
+  },
+  "nodeGroups": [],
+  "id": "I8zczuu1Rb3cs4gG",
+  "tags": []
+}
